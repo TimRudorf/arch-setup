@@ -25,33 +25,17 @@ done
 
 # packman packages to be installed
 declare -r PACKAGES_PACMAN=(
-  curl
-  python
-  nodejs
-  ghostty
   firefox
-  neovim
   yazi
-  hyprland
-  hypridle
-  hyprlock
-  btop
-  lazygit
-  walker
-  waybar
-  fzf
   yazi
   yubikey-manager
   pam-u2f
   libfido2
-  iwd
-  impala
-  localsend
   stow
   bat
-  zoxide
-  eza
   zellij
+  bitwarden
+  nextcloud-client
   )
 
 # npm packages to be installed
