@@ -34,10 +34,9 @@ fi
 # change starship config to catppuccin
 starship preset catppuccin-powerline -o ~/.config/starship.toml
 
-# change zellij config to catppuccin
+# download zellij catppuccin theme
 mkdir -p $DIR_USER_CONFIG/zellij/themes
 curl https://raw.githubusercontent.com/catppuccin/zellij/refs/heads/main/catppuccin.kdl > $DIR_USER_CONFIG/zellij/themes/catppuccin.kdl
-zellij options --theme catppuccin
 
 # stow all config files
 stow --adopt --dir $DIR_SCRIPT/dotfiles --target $DIR_USER_HOME *
