@@ -42,3 +42,4 @@ curl https://raw.githubusercontent.com/catppuccin/zellij/refs/heads/main/catppuc
 cd $DIR_SCRIPT/dotfiles
 stow --adopt --target $DIR_USER_HOME *
 git restore .
+cd $DIR_SCRIPT
