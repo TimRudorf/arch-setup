@@ -39,5 +39,5 @@ mkdir -p $DIR_USER_CONFIG/zellij/themes
 curl https://raw.githubusercontent.com/catppuccin/zellij/refs/heads/main/catppuccin.kdl > $DIR_USER_CONFIG/zellij/themes/catppuccin.kdl
 
 # stow all config files
-stow --adopt --dir $DIR_SCRIPT/dotfiles --target $DIR_USER_HOME *
+stow --adopt --dir $DIR_SCRIPT/dotfiles --target $DIR_USER_HOME 
 git restore .
