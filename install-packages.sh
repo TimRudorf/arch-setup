@@ -43,6 +43,10 @@ declare -r PACKAGES_PACMAN=(
   bat
   zellij
   wl-clipboard
+  # audio ------------------
+  pulseaudio
+  pavucontrol
+  pactl
   # languages --------------
   nodejs
   npm
