@@ -44,11 +44,24 @@ sudo chsh -s $(which zsh) $USER
 yay -S --noconfirm ttf-meslo-nerd-font-powerlevel10k
 
 # oh-my-zsh installieren
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) -y"
+if [[ ! -d $ZSH_CUSTOM ]]; then
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) -y"
+fi
 
-# oh-my-zsh plugin
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+# oh-my-zsh plugins
 
-# oh-my-zsh themes
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+plugins=(
+  "https://github.com/zsh-users/zsh-autosuggestions;$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+  "https://github.com/zsh-users/zsh-syntax-highlighting.git;$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+  "--depth=1 https://github.com/romkatv/powerlevel10k.git;$ZSH_CUSTOM/themes/powerlevel10k"
+  )
+
+for plugin in "${plugins[@]}"; do
+  IFS=';' read -r url dir <<<"$plugin"
+  if [ -d "$dir/.git" ] || [ -d "$dir" ]; then
+    echo "Überspringe clone, existiert schon: $dir"
+  else
+    echo "Cloning $url -> $dir"
+    git clone "$url" "$dir"
+  fi
+done
