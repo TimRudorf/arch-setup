@@ -97,7 +97,7 @@ function install_yay() {
 
 # pacman package installieren
 function install_pacman_package() {
-  sudo pacman -S --noconfirm $1
+  yay -S --noconfirm $1
 }
 
 # ask for sudo permission
