@@ -7,19 +7,18 @@ declare -r DIR_USER_HOME=$(eval echo ~$USER)
 OPTION_DEBUG=false
 
 # check if debug is enabled
-for parameter in "$@"
-do
+for parameter in "$@"; do
   case $parameter in
 
-    -d | --debug)
-      printf 'debug has been enabled\n'
-      OPTION_DEBUG=true
-      ;;
+  -d | --debug)
+    printf 'debug has been enabled\n'
+    OPTION_DEBUG=true
+    ;;
 
-    *)
-      printf "option '$parameter' is unknown\n"
-      exit 1
-      ;;
+  *)
+    printf "option '$parameter' is unknown\n"
+    exit 1
+    ;;
   esac
 done
 
@@ -36,6 +35,9 @@ declare -r PACKAGES_PACMAN=(
   wget
   ghostty
   btop
+  fzf
+  eza
+  zoxide
   firefox
   stow
   bat
@@ -49,7 +51,8 @@ declare -r PACKAGES_PACMAN=(
   hyprland
   hyprlock
   hypridle
-  walker
+  hyprpaper
+  rofi
   waybar
   # tui --------------------
   btop
@@ -65,30 +68,29 @@ declare -r PACKAGES_PACMAN=(
   # other ------------------
   bitwarden
   nextcloud-client
-  )
+)
 
 # npm packages to be installed
 declare -r PACKAGES_NPM=(
   @openai/codex
-  )
+)
 
 # Hilfsfunktion: Ausgabe je nach Debug Modus
 function run_debug() {
   if $OPTION_DEBUG; then
     $@
   else
-    $@ > /dev/null 2>&1
+    $@ >/dev/null 2>&1
   fi
 }
 
 # yay installieren
 function install_yay() {
-  if command -v yay > /dev/null 2>&1; then
+  if command -v yay >/dev/null 2>&1; then
     printf 'yay already installed\n'
     return
   fi
 
-  
   sudo pacman -S --needed --noconfirm git base-devel
   git clone https://aur.archlinux.org/yay.git $DIR_USER_HOME
   cd $DIR_USER_HOME/yay
@@ -118,8 +120,7 @@ run_debug install_yay
 
 # install packages (pacman)
 printf 'installing pacman packages\n'
-for package in "${PACKAGES_PACMAN[@]}"
-do
+for package in "${PACKAGES_PACMAN[@]}"; do
   printf "installing $package...\n"
   run_debug install_pacman_package $package
 done
@@ -131,8 +132,7 @@ run_debug sudo npm install -g npm@latest
 
 # install packages (npm)
 printf 'installing npm packages\n'
-for package in "${PACKAGES_NPM[@]}"
-do
+for package in "${PACKAGES_NPM[@]}"; do
   printf "installing $package...\n"
   run_debug sudo npm install -g $package
 done
