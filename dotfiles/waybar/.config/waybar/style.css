@@ -45,6 +45,7 @@ button {
 #custom-music,
 #tray,
 #backlight,
+#custom-clock,
 #network,
 #clock,
 #battery,
@@ -58,7 +59,8 @@ button {
   margin: 5px 0;
 }
 
-#clock {
+#clock,
+#custom-clock {
   color: @blue;
   border-radius: 5px;
 }
