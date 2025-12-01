@@ -27,6 +27,7 @@ done
 declare -r PACKAGES_PACMAN=(
   # base -------------------
   git
+  zsh
   iwd
   rsync
   less

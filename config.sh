@@ -35,3 +35,6 @@ fi
 cd $DIR_SCRIPT/dotfiles
 stow --target $DIR_USER_HOME *
 cd $DIR_SCRIPT
+
+# zsh als Standardshell
+sudo chsh -s $(which zsh) $USER 
