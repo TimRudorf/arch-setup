@@ -61,7 +61,7 @@ button {
 
 #clock,
 #custom-clock {
-  color: @blue;
+  color: @text;
   border-radius: 5px;
 }
 
