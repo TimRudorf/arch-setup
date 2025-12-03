@@ -44,6 +44,7 @@ declare -r PACKAGES_PACMAN=(
   zellij
   wl-clipboard
   ripgrep
+  freerdp
   # languages
   python
   # audio ------------------
