@@ -39,12 +39,14 @@ declare -r PACKAGES_PACMAN=(
   eza
   zoxide
   firefox
+  firefoxpwa
   stow
   bat
   zellij
   wl-clipboard
   ripgrep
   freerdp
+  dunst
   # languages
   python
   # audio ------------------
