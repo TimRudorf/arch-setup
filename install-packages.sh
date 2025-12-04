@@ -47,8 +47,14 @@ declare -r PACKAGES_PACMAN=(
   ripgrep
   freerdp
   7zip
+  power-profiles-daemon
+  glow
+  core/linux-api-headers
+  gcc
   # languages
   python
+  python-pip
+  python-evdev
   # audio ------------------
   pulseaudio
   pavucontrol
