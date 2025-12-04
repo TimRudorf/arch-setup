@@ -77,6 +77,6 @@ declare -r DIR_FIREFOX_ACTIVE_PROFILE=$(find $DIR_FIREFOX_PROFILES -type d -name
 rsync -avhP $DIR_SCRIPT/config/firefox/* $DIR_FIREFOX_ACTIVE_PROFILE
 
 # install u2f files
-sudo install -b -m 600 $DIR_SCRIPT/config/u2f/u2f_mapping /etc/u2f_mapping
+sudo install -b -m 644 $DIR_SCRIPT/config/u2f/u2f_mapping /etc/u2f_mapping
 sudo install -b -m 644 $DIR_SCRIPT/config/u2f/pam.d/sudo /etc/pam.d/sudo
 sudo install -b -m 644 $DIR_SCRIPT/config/u2f/pam.d/login /etc/pam.d/login
