@@ -70,6 +70,7 @@ declare -r PACKAGES_PACMAN=(
   # tui --------------------
   btop
   lazygit
+  lazysql
   neovim
   yazi
   impala
