@@ -77,10 +77,11 @@ edpweb() {
       done
       local filter="${text_parts[*]}"
       # Stream log plain from Windows VM; filter/color locally with awk (ANSI; force LC_ALL=C to avoid multibyte issues).
-      LC_ALL=C ssh eifert-dev "powershell -NoProfile -Command \"Get-Content -Path '${remote_dir}\\edpweb.log' -Tail 200 -Wait\"" | LC_ALL=C awk -v f="$filter" -v lvl="$level" 'BEGIN { use=(length(f)>0); useLvl=(length(lvl)>0); esc=sprintf("%c",27); red=esc"[31m"; cyan=esc"[36m"; reset=esc"[0m"; levelfilt=tolower(lvl); } { line=$0; sub(/\r$/,"",line); l=tolower(line); if (use && l !~ tolower(f)) next; level=""; split(line, parts, /\|/); if (length(parts) >= 3) { level=parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", level); level=tolower(level); } if (useLvl && level != levelfilt) next; if (level=="fehler") printf("%s%s%s\n", red, line, reset); else if (level=="debug") printf("%s%s%s\n", cyan, line, reset); else print line; fflush(); }'
+      LC_ALL=C ssh eifert-dev "powershell -NoProfile -Command \"Get-Content -Path '${remote_dir}\\edpweb.log' -Tail 200 -Wait\"" | LC_ALL=C awk -v f="$filter" -v lvl="$level" 'BEGIN { use=(length(f)>0); useLvl=(length(lvl)>0); esc=sprintf("%c",27); red=esc"[31m"; cyan=esc"[36m"; reset=esc"[0m"; levelfilt=tolower(lvl); } NR==1 { system("printf \"\\033c\""); } { line=$0; sub(/\r$/,"",line); l=tolower(line); if (use && l !~ tolower(f)) next; level=""; split(line, parts, /\|/); if (length(parts) >= 3) { level=parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", level); level=tolower(level); } if (useLvl && level != levelfilt) next; if (level=="fehler") printf("%s%s%s\n", red, line, reset); else if (level=="debug") printf("%s%s%s\n", cyan, line, reset); else print line; fflush(); }'
       ;;
     compilelog)
-      ssh eifert-dev "cmd /c \"cd /d ${remote_dir} && type compile.log\""
+      # Stream compile log live and clear screen once the first line arrives.
+      LC_ALL=C ssh eifert-dev "powershell -NoProfile -Command \"Get-Content -Path '${remote_dir}\\compile.log' -Tail 200 -Wait\"" | LC_ALL=C awk 'NR==1 { system("printf \"\\033c\""); } { sub(/\r$/,""); print; fflush(); }'
       ;;
     startuplog)
       ssh eifert-dev "cmd /c \"cd /d ${remote_dir} && type startup_error.log\""
