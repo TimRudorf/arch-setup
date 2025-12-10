@@ -33,7 +33,7 @@ declare -r PACKAGES_PACMAN=(
   jq
   curl
   wget
-  ghostty
+  kitty
   btop
   fzf
   eza
