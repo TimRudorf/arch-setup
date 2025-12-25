@@ -13,24 +13,24 @@ OPTION_DEBUG=false
 
 # check if debug is enabled
 for parameter in "$@"; do
-  case $parameter in
+    case $parameter in
 
-  -d | --debug)
-    printf 'debug has been enabled\n'
-    OPTION_DEBUG=true
-    ;;
+    -d | --debug)
+        printf 'debug has been enabled\n'
+        OPTION_DEBUG=true
+        ;;
 
-  *)
-    printf "option '$parameter' is unknown\n"
-    exit 1
-    ;;
-  esac
+    *)
+        printf "option '$parameter' is unknown\n"
+        exit 1
+        ;;
+    esac
 done
 
 # ask for sudo permission
 sudo -v
 if [[ "$(sudo id -u)" -ne 0 ]]; then
-  printf 'This script must be run with sudo\n'
+    printf 'This script must be run with sudo\n'
 fi
 
 # stow all config files
@@ -46,25 +46,25 @@ yay -S --noconfirm ttf-meslo-nerd-font-powerlevel10k
 
 # oh-my-zsh installieren
 if [[ ! -d $ZSH_CUSTOM ]]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) -y"
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh) -y"
 fi
 
 # oh-my-zsh plugins
 
 plugins=(
-  "https://github.com/zsh-users/zsh-autosuggestions;$ZSH_CUSTOM/plugins/zsh-autosuggestions"
-  "https://github.com/zsh-users/zsh-syntax-highlighting.git;$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
-  "--depth=1 https://github.com/romkatv/powerlevel10k.git;$ZSH_CUSTOM/themes/powerlevel10k"
+    "https://github.com/zsh-users/zsh-autosuggestions;$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+    "https://github.com/zsh-users/zsh-syntax-highlighting.git;$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+    "--depth=1 https://github.com/romkatv/powerlevel10k.git;$ZSH_CUSTOM/themes/powerlevel10k"
 )
 
 for plugin in "${plugins[@]}"; do
-  IFS=';' read -r url dir <<<"$plugin"
-  if [ -d "$dir/.git" ] || [ -d "$dir" ]; then
-    echo "Überspringe clone, existiert schon: $dir"
-  else
-    echo "Cloning $url -> $dir"
-    git clone "$url" "$dir"
-  fi
+    IFS=';' read -r url dir <<<"$plugin"
+    if [ -d "$dir/.git" ] || [ -d "$dir" ]; then
+        echo "Überspringe clone, existiert schon: $dir"
+    else
+        echo "Cloning $url -> $dir"
+        git clone "$url" "$dir"
+    fi
 done
 
 # iwd aktivieren
@@ -80,3 +80,6 @@ rsync -avhP $DIR_SCRIPT/config/firefox/* $DIR_FIREFOX_ACTIVE_PROFILE
 sudo install -b -m 644 $DIR_SCRIPT/config/u2f/u2f_mapping /etc/u2f_mapping
 sudo install -b -m 644 $DIR_SCRIPT/config/u2f/pam.d/sudo /etc/pam.d/sudo
 sudo install -b -m 644 $DIR_SCRIPT/config/u2f/pam.d/login /etc/pam.d/login
+
+# Pipwire service
+systemctl --user enable --now pipewire pipewire-pulse wireplumber xdg-desktop-portal xdg-desktop-portal-hyprland

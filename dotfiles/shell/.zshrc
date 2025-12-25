@@ -29,6 +29,10 @@ export NVM_DIR="$HOME/.nvm"
 # matlab fix
 export LD_LIBRARY_PATH=$HOME/matlab/gnutls/usr/lib/:;
 
+# Bildschirmfreigabe
+export XDG_CURRENT_DESKTOP=Hyprland
+export MOZ_ENABLE_WAYLAND=1
+
 # zoxide
 eval "$(zoxide init zsh)"
 
