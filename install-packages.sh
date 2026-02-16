@@ -1,30 +1,13 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# CONSTANTS
-declare -r DIR_USER_HOME=$(eval echo ~$USER)
+# --- Configuration -----------------------------------------------------------
 
-# default option values
-OPTION_DEBUG=false
+NVM_VERSION="0.40.3"
+NODE_VERSION="24"
 
-# check if debug is enabled
-for parameter in "$@"; do
-    case $parameter in
-
-    -d | --debug)
-        printf 'debug has been enabled\n'
-        OPTION_DEBUG=true
-        ;;
-
-    *)
-        printf "option '$parameter' is unknown\n"
-        exit 1
-        ;;
-    esac
-done
-
-# packman packages to be installed
-declare -r PACKAGES_PACMAN=(
-    # base -------------------
+PACKAGES_PACMAN=(
+    # base
     git
     zsh
     iwd
@@ -34,7 +17,6 @@ declare -r PACKAGES_PACMAN=(
     curl
     wget
     kitty
-    btop
     fzf
     eza
     zoxide
@@ -48,14 +30,11 @@ declare -r PACKAGES_PACMAN=(
     7zip
     power-profiles-daemon
     glow
-    core/linux-api-headers
-    gcc
     bluez
     # languages
     python
     python-pip
-    python-evdev
-    # audio ------------------
+    # audio
     pavucontrol
     pactl
     pipewire
@@ -63,7 +42,7 @@ declare -r PACKAGES_PACMAN=(
     wireplumber
     xdg-desktop-portal
     xdg-desktop-portal-hyprland
-    # hyperland --------------
+    # hyprland
     hyprland
     hyprlock
     hypridle
@@ -71,7 +50,7 @@ declare -r PACKAGES_PACMAN=(
     rofi
     waybar
     dunst
-    # tui --------------------
+    # tui
     btop
     lazygit
     lazysql
@@ -79,81 +58,111 @@ declare -r PACKAGES_PACMAN=(
     yazi
     impala
     bluetui
-    # other ------------------
+    # other
     bitwarden
     nextcloud-client
 )
 
-# npm packages to be installed
-declare -r PACKAGES_NPM=(
+PACKAGES_NPM=(
     @openai/codex
 )
 
-# Hilfsfunktion: Ausgabe je nach Debug Modus
-function run_debug() {
-    if $OPTION_DEBUG; then
-        $@
+# --- Options -----------------------------------------------------------------
+
+VERBOSE=false
+
+for arg in "$@"; do
+    case "$arg" in
+        -v|--verbose)
+            VERBOSE=true
+            ;;
+        -h|--help)
+            echo "Usage: $(basename "$0") [-v|--verbose] [-h|--help]"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# --- Helper functions --------------------------------------------------------
+
+log() { printf ':: %s\n' "$*"; }
+
+run() {
+    if "$VERBOSE"; then
+        "$@"
     else
-        $@ >/dev/null 2>&1
+        "$@" >/dev/null 2>&1
     fi
 }
 
-# yay installieren
-function install_yay() {
+install_yay() {
     if command -v yay >/dev/null 2>&1; then
-        printf 'yay already installed\n'
+        log "yay already installed"
         return
     fi
 
+    local build_dir
+    build_dir="$(mktemp -d)"
+    trap 'rm -rf "$build_dir"' RETURN
+
     sudo pacman -S --needed --noconfirm git base-devel
-    git clone https://aur.archlinux.org/yay.git $DIR_USER_HOME
-    cd $DIR_USER_HOME/yay
-    makepkg -si
-    cd $DIR_USER_HOME
+    git clone https://aur.archlinux.org/yay.git "$build_dir/yay"
+    (cd "$build_dir/yay" && makepkg -si --noconfirm)
 }
 
-# pacman package installieren
-function install_pacman_package() {
-    yay -S --noconfirm $1
-}
+# --- Pre-checks --------------------------------------------------------------
 
-# ask for sudo permission
-sudo -v
-if [[ "$(sudo id -u)" -ne 0 ]]; then
-    printf 'This script must be run with sudo\n'
+if [[ "${EUID}" -eq 0 ]]; then
+    echo "Do not run this script as root. It will ask for sudo when needed." >&2
+    exit 1
 fi
 
-# update pacman
-printf '\n'
-printf 'updating pacman ...\n'
-run_debug sudo pacman -Syu --noconfirm
+sudo -v
 
-# install yay
-printf 'installing yay...\n'
-run_debug install_yay
+# --- Main --------------------------------------------------------------------
 
-# install packages (pacman)
-printf 'installing pacman packages\n'
+FAILED=()
+
+log "Updating pacman..."
+run sudo pacman -Syu --noconfirm
+
+log "Installing yay..."
+run install_yay
+
+log "Installing pacman packages..."
 for package in "${PACKAGES_PACMAN[@]}"; do
-    printf "installing $package...\n"
-    run_debug install_pacman_package $package
+    log "  $package"
+    if ! run yay -S --needed --noconfirm "$package"; then
+        FAILED+=("$package")
+    fi
 done
 
-# install nodejs/npm
-printf "\n"
-printf "installing nodejs/npm...\n"
-run_debug curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-\. "$HOME/.nvm/nvm.sh"
-run_debug nvm install 24
+log "Installing NVM and Node.js ${NODE_VERSION}..."
+run curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh" | bash
+export NVM_DIR="${HOME}/.nvm"
+# shellcheck source=/dev/null
+. "${NVM_DIR}/nvm.sh"
+run nvm install "$NODE_VERSION"
 
-# update npm
-printf '\n'
-printf 'updating npm...\n'
-run_debug npm install -g npm@latest
-
-# install packages (npm)
-printf 'installing npm packages\n'
+log "Installing npm packages..."
 for package in "${PACKAGES_NPM[@]}"; do
-    printf "installing $package...\n"
-    run_debug npm install -g $package
+    log "  $package"
+    if ! run npm install -g "$package"; then
+        FAILED+=("$package")
+    fi
 done
+
+# --- Summary -----------------------------------------------------------------
+
+echo
+if [[ ${#FAILED[@]} -gt 0 ]]; then
+    log "Finished with ${#FAILED[@]} failed package(s):"
+    printf '   - %s\n' "${FAILED[@]}"
+    exit 1
+else
+    log "All packages installed successfully."
+fi

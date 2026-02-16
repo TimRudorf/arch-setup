@@ -1,54 +1,67 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Paths
+# --- Configuration (adjust for your university) ------------------------------
+
+ANON_IDENTITY="eduroam@tu-darmstadt.de"
+SERVER_DOMAIN="radius.hrz.tu-darmstadt.de"
+
+# --- Paths -------------------------------------------------------------------
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CERT_SOURCE="${SCRIPT_DIR}/config/network/eduroam.pem"
+CERT_SOURCE="${SCRIPT_DIR}/config/network/eduroam-ca.pem"
 CERT_TARGET="/var/lib/iwd/certs/eduroam-ca.pem"
 IWD_DIR="/var/lib/iwd"
 PROFILE="${IWD_DIR}/eduroam.8021x"
 
+# --- Pre-checks --------------------------------------------------------------
+
 if [[ "${EUID}" -ne 0 ]]; then
-  echo "Bitte als root ausführen (sudo ./connect-eduroam.sh)." >&2
-  exit 1
+    echo "Run as root: sudo $0" >&2
+    exit 1
 fi
 
-if [[ -f $PROFILE ]]; then
-  echo "Die Konfiguration $PROFILE existiert bereits."
-  exit 1
+if [[ -f "$PROFILE" ]]; then
+    echo "Profile already exists: $PROFILE" >&2
+    echo "Delete it first to reconfigure." >&2
+    exit 1
 fi
 
-if [[ ! -f "${CERT_SOURCE}" && ! -f "${CERT_TARGET}" ]]; then
-  echo "Zertifikat fehlt: ${CERT_SOURCE} existiert nicht und ${CERT_TARGET} ebenfalls nicht." >&2
-  exit 1
+if [[ ! -f "$CERT_SOURCE" && ! -f "$CERT_TARGET" ]]; then
+    echo "Certificate missing: neither $CERT_SOURCE nor $CERT_TARGET found." >&2
+    exit 1
 fi
 
-read -rp "Eduroam-Benutzername (z.B. user@uni.de): " EDU_USER
-read -rsp "Eduroam-Passwort: " EDU_PASS
+# --- Credentials -------------------------------------------------------------
+
+read -rp "Eduroam username (e.g. user@uni.de): " EDU_USER
+read -rsp "Eduroam password: " EDU_PASS
 echo
 
-mkdir -p "$(dirname "${CERT_TARGET}")" "${IWD_DIR}"
+# --- Setup -------------------------------------------------------------------
 
-if [[ -f "${CERT_SOURCE}" ]]; then
-  mv "${CERT_SOURCE}" "${CERT_TARGET}"
-  echo "Zertifikat nach ${CERT_TARGET} verschoben."
+mkdir -p "$(dirname "$CERT_TARGET")" "$IWD_DIR"
+
+if [[ -f "$CERT_SOURCE" ]]; then
+    cp "$CERT_SOURCE" "$CERT_TARGET"
+    echo "Certificate copied to $CERT_TARGET."
 else
-  echo "Zertifikat bereits unter ${CERT_TARGET} vorhanden, überspringe Verschieben."
+    echo "Certificate already present at $CERT_TARGET, skipping."
 fi
-chmod 644 "${CERT_TARGET}"
+chmod 644 "$CERT_TARGET"
 
-cat >"${PROFILE}" <<EOF
+umask 077
+cat >"$PROFILE" <<EOF
 [Security]
 EAP-Method=PEAP
 EAP-Identity=${EDU_USER}
 EAP-PEAP-Phase2-Method=MSCHAPV2
 EAP-PEAP-Phase2-Identity=${EDU_USER}
 EAP-PEAP-Phase2-Password=${EDU_PASS}
-EAP-PEAP-Anon-Identity=eduroam@tu-darmstadt.de
+EAP-PEAP-Anon-Identity=${ANON_IDENTITY}
 EAP-PEAP-CACert=${CERT_TARGET}
-EAP-ServerDomainMask=radius.hrz.tu-darmstadt.de
+EAP-ServerDomainMask=${SERVER_DOMAIN}
 EOF
-chmod 600 "${PROFILE}"
 
-echo "iwd-Konfiguration erstellt: ${PROFILE}"
-echo "Starte iwd neu, falls notwendig: systemctl restart iwd"
+echo "iwd profile created: $PROFILE"
+echo "Restart iwd if needed: systemctl restart iwd"
