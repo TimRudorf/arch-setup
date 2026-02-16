@@ -1,0 +1,8 @@
+# SSH keys
+config/ssh/
+
+# Plan files
+plan.md
+
+# OS artifacts
+.DS_Store
