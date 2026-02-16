@@ -50,6 +50,7 @@ PACKAGES_PACMAN=(
     rofi
     waybar
     dunst
+    socat
     # tui
     btop
     lazygit
