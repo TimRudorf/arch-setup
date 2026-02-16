@@ -39,7 +39,6 @@ declare -r PACKAGES_PACMAN=(
     eza
     zoxide
     firefox
-    firefoxpwa
     stow
     bat
     zellij
@@ -80,14 +79,9 @@ declare -r PACKAGES_PACMAN=(
     yazi
     impala
     bluetui
-    # u2f/passkey ------------
-    yubikey-manager
-    pam-u2f
-    libfido2
     # other ------------------
     bitwarden
     nextcloud-client
-    libreoffice-still
 )
 
 # npm packages to be installed

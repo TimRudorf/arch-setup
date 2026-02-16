@@ -44,3 +44,9 @@ source ~/.alias.sh
 
 # EDP Helpers
 source ~/.edp_helpers.sh
+
+# LoaclBin
+export PATH="$HOME/.local/bin:$PATH"
+
+# LSP Server für Claude Code
+export ENABLE_LSP_TOOL=1
